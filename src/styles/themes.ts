@@ -1,0 +1,245 @@
+export interface ThemeStyles {
+  container: React.CSSProperties;
+  h1: React.CSSProperties;
+  h2: React.CSSProperties;
+  h3: React.CSSProperties;
+  p: React.CSSProperties;
+  blockquote: React.CSSProperties;
+  code: React.CSSProperties;
+  pre: React.CSSProperties;
+  ul: React.CSSProperties;
+  ol: React.CSSProperties;
+  li: React.CSSProperties;
+  link: React.CSSProperties;
+  strong: React.CSSProperties;
+}
+
+export interface Theme {
+  id: string;
+  name: string;
+  styles: ThemeStyles;
+}
+
+export const THEMES: Theme[] = [
+  {
+    id: 'default',
+    name: '默认清新',
+    styles: {
+      container: {
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontSize: '16px',
+        lineHeight: '1.75',
+        color: '#333',
+        wordBreak: 'break-word',
+      },
+      h1: {
+        fontSize: '24px',
+        fontWeight: 'bold',
+        color: '#1a1a1a',
+        marginBottom: '20px',
+        marginTop: '30px',
+        borderBottom: '2px solid #eee',
+        paddingBottom: '10px',
+      },
+      h2: {
+        fontSize: '20px',
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: '15px',
+        marginTop: '25px',
+      },
+      h3: {
+        fontSize: '18px',
+        fontWeight: 'bold',
+        color: '#444',
+        marginBottom: '12px',
+        marginTop: '20px',
+      },
+      p: {
+        marginBottom: '16px',
+        textAlign: 'justify',
+      },
+      blockquote: {
+        borderLeft: '4px solid #ddd',
+        paddingLeft: '16px',
+        color: '#666',
+        fontStyle: 'italic',
+        margin: '20px 0',
+      },
+      code: {
+        backgroundColor: '#f5f5f5',
+        padding: '2px 4px',
+        borderRadius: '4px',
+        fontFamily: 'monospace',
+      },
+      pre: {
+        backgroundColor: '#282c34',
+        color: '#abb2bf',
+        padding: '16px',
+        borderRadius: '8px',
+        overflowX: 'auto',
+        margin: '20px 0',
+      },
+      ul: {
+        paddingLeft: '20px',
+        marginBottom: '16px',
+      },
+      ol: {
+        paddingLeft: '20px',
+        marginBottom: '16px',
+      },
+      li: {
+        marginBottom: '8px',
+      },
+      link: {
+        color: '#0070f3',
+        textDecoration: 'underline',
+      },
+      strong: {
+        fontWeight: 'bold',
+        color: '#000',
+      },
+    },
+  },
+  {
+    id: 'wechat-green',
+    name: '微信绿',
+    styles: {
+      container: {
+        fontFamily: 'Optima-Regular, Optima, PingFangSC-light, PingFangTC-light, "PingFang SC", Cambria, Cochin, Georgia, Times, "Times New Roman", serif',
+        fontSize: '16px',
+        lineHeight: '1.6',
+        color: '#3e3e3e',
+      },
+      h1: {
+        fontSize: '22px',
+        fontWeight: 'bold',
+        color: '#07c160',
+        textAlign: 'center',
+        margin: '40px 0 20px',
+        padding: '10px',
+        borderBottom: '2px solid #07c160',
+      },
+      h2: {
+        fontSize: '19px',
+        fontWeight: 'bold',
+        color: '#ffffff',
+        backgroundColor: '#07c160',
+        padding: '8px 15px',
+        borderRadius: '4px',
+        display: 'inline-block',
+        margin: '30px 0 15px',
+      },
+      h3: {
+        fontSize: '17px',
+        fontWeight: 'bold',
+        color: '#07c160',
+        borderLeft: '4px solid #07c160',
+        paddingLeft: '10px',
+        margin: '20px 0 10px',
+      },
+      p: {
+        marginBottom: '1.5em',
+        letterSpacing: '1px',
+      },
+      blockquote: {
+        backgroundColor: '#f7f7f7',
+        borderLeft: '4px solid #07c160',
+        padding: '15px',
+        color: '#666',
+        margin: '20px 0',
+      },
+      code: {
+        color: '#07c160',
+        backgroundColor: '#f0f0f0',
+        padding: '2px 4px',
+        borderRadius: '3px',
+      },
+      pre: {
+        backgroundColor: '#1e1e1e',
+        color: '#d4d4d4',
+        padding: '15px',
+        borderRadius: '8px',
+        margin: '20px 0',
+      },
+      ul: { paddingLeft: '20px', marginBottom: '16px' },
+      ol: { paddingLeft: '20px', marginBottom: '16px' },
+      li: { marginBottom: '8px' },
+      link: {
+        color: '#07c160',
+        textDecoration: 'none',
+        borderBottom: '1px solid #07c160',
+      },
+      strong: {
+        fontWeight: 'bold',
+        color: '#07c160',
+      },
+    },
+  },
+  {
+    id: 'elegant-blue',
+    name: '优雅蓝',
+    styles: {
+      container: {
+        fontFamily: '"Times New Roman", Times, serif',
+        fontSize: '17px',
+        lineHeight: '1.8',
+        color: '#2c3e50',
+      },
+      h1: {
+        fontSize: '26px',
+        color: '#2980b9',
+        borderBottom: '1px solid #2980b9',
+        paddingBottom: '5px',
+        marginBottom: '25px',
+        marginTop: '35px',
+      },
+      h2: {
+        fontSize: '21px',
+        color: '#2980b9',
+        paddingLeft: '12px',
+        borderLeft: '4px solid #2980b9',
+        margin: '30px 0 15px',
+      },
+      h3: {
+        fontSize: '19px',
+        color: '#3498db',
+        margin: '25px 0 12px',
+      },
+      p: {
+        marginBottom: '18px',
+        textIndent: '2em',
+      },
+      blockquote: {
+        border: '1px solid #3498db',
+        borderRadius: '8px',
+        padding: '15px',
+        backgroundColor: '#ebf5fb',
+        color: '#2c3e50',
+        margin: '20px 0',
+      },
+      code: {
+        color: '#e74c3c',
+        fontFamily: 'monospace',
+      },
+      pre: {
+        backgroundColor: '#fdfdfd',
+        border: '1px solid #ddd',
+        padding: '15px',
+        borderRadius: '4px',
+        margin: '20px 0',
+      },
+      ul: { paddingLeft: '20px', marginBottom: '16px' },
+      ol: { paddingLeft: '20px', marginBottom: '16px' },
+      li: { marginBottom: '8px' },
+      link: {
+        color: '#2980b9',
+        fontWeight: 'bold',
+      },
+      strong: {
+        color: '#2c3e50',
+        borderBottom: '2px solid #3498db',
+      },
+    },
+  },
+];

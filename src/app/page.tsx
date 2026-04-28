@@ -4,10 +4,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { THEMES, Theme } from '../styles/themes';
+import { DEFAULT_MARKDOWN } from '../constants/defaultMarkdown';
 
 export default function Home() {
   const [markdownInput, setMarkdownInput] = useState<string>('');
-  const [previewMode, setPreviewMode] = useState<'laptop' | 'phone'>('laptop');
+  const [previewMode, setPreviewMode] = useState<'laptop' | 'phone'>('phone');
   const [selectedTheme, setSelectedTheme] = useState<Theme>(THEMES[0]);
   const contentRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -19,6 +20,8 @@ export default function Home() {
       const storedMarkdown = localStorage.getItem('markdownInput');
       if (storedMarkdown) {
         setMarkdownInput(storedMarkdown); // eslint-disable-line react-hooks/set-state-in-effect
+      } else {
+        setMarkdownInput(DEFAULT_MARKDOWN); // eslint-disable-line react-hooks/set-state-in-effect
       }
     }
   }, []);
@@ -59,6 +62,8 @@ export default function Home() {
   };
 
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [showToast, setShowToast] = useState(false);
+
 
   const copyToClipboard = async () => {
     try {
@@ -76,13 +81,16 @@ export default function Home() {
       });
       await navigator.clipboard.write([item]);
       setCopyStatus('copied');
+      setShowToast(true);
     } catch (error) {
       console.error('Failed to copy rich text: ', error);
       // Fallback to plain text copy if rich text fails
       navigator.clipboard.writeText(markdownInput);
       setCopyStatus('copied'); // Still show copied even if it's plain text
+      setShowToast(true);
     }
-    setTimeout(() => setCopyStatus('idle'), 2000);
+    setTimeout(() => setCopyStatus('idle'), 30000);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   return (
@@ -91,8 +99,11 @@ export default function Home() {
         <header className="flex justify-between items-center mb-10">
           <div>
             <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              Markdown to WeChat
+              Markdown 转 公众号内容
             </h1>
+          </div>
+          <div>
+
           </div>
           <div className="flex gap-2 bg-white/50 p-1 rounded-full backdrop-blur-sm border border-white/20 shadow-inner">
             {THEMES.map((theme) => (
@@ -119,7 +130,7 @@ export default function Home() {
               {copyStatus === 'copied' ? (
                 <>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  已将富文本内容复制到剪贴板，可直接粘贴到微信编辑器。
+                  已复制
                 </>
               ) : (
                 <>
@@ -130,6 +141,11 @@ export default function Home() {
             </button>
           </div>
         </header>
+        {showToast && (
+          <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50">
+            已将富文本内容复制到剪贴板，可直接粘贴 (Ctrl + V) 到微信编辑器
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row w-full gap-8 flex-1">
           {/* Markdown Input */}
@@ -143,7 +159,7 @@ export default function Home() {
             <textarea
               ref={inputRef}
               className="flex-1 p-4 bg-gray-50/50 border-none rounded-xl focus:ring-2 focus:ring-blue-400 font-mono text-sm resize-none overflow-y-auto"
-              placeholder="Enter your Markdown content here..."
+              placeholder="将文本内容拷贝到这里"
               value={markdownInput}
               onChange={handleMarkdownChange}
               onScroll={handleInputScroll}
@@ -178,22 +194,20 @@ export default function Home() {
             <div className="flex-1 bg-gray-50">
               {/* 外层：控制“设备尺寸” */}
               <div
-                className={`transition-all duration-500 ${previewMode === 'phone' ? 'max-w-[375px] mx-auto my-4 aspect-[9/19]' : 'w-full h-[100vh]' }`}
+                className={`transition-all duration-500 ${previewMode === 'phone' ? 'max-w-[375px] mx-auto my-4 aspect-[9/19]' : 'w-full h-[100vh]'}`}
               >
                 {/* 中层：滚动容器（关键！） */}
                 <div
                   ref={previewRef}
                   onScroll={handlePreviewScroll}
-                  className={`h-full overflow-auto bg-white border border-gray-100 transition-all duration-500 ${
-                    previewMode === 'phone' ? 'rounded-[50px]' : 'rounded-xl'
-                  }`}
+                  className={`h-full overflow-auto bg-white border border-gray-100 transition-all duration-500 ${previewMode === 'phone' ? 'rounded-[50px]' : 'rounded-xl'
+                    }`}
                 >
                   {/* 内容层：只控制 padding，不影响布局 */}
                   <div
                     ref={contentRef}
-                    className={`wechat-content max-w-none ${
-                      previewMode === 'phone' ? 'p-4 pt-8' : 'p-6'
-                    }`}
+                    className={`wechat-content max-w-none ${previewMode === 'phone' ? 'p-4 pt-8' : 'p-6'
+                      }`}
                     style={selectedTheme.styles.container}
                   >
                     <ReactMarkdown
@@ -221,6 +235,24 @@ export default function Home() {
                         strong: ({ node, ...props }) => (
                           <strong style={selectedTheme.styles.strong} {...props} />
                         ),
+                        table: ({ node, ...props }) => (
+                          <table style={selectedTheme.styles.table} {...props} />
+                        ),
+                        thead: ({ node, ...props }) => (
+                          <thead style={selectedTheme.styles.thead} {...props} />
+                        ),
+                        tbody: ({ node, ...props }) => (
+                          <tbody style={selectedTheme.styles.tbody} {...props} />
+                        ),
+                        tr: ({ node, ...props }) => (
+                          <tr style={selectedTheme.styles.tr} {...props} />
+                        ),
+                        th: ({ node, ...props }) => (
+                          <th style={selectedTheme.styles.th} {...props} />
+                        ),
+                        td: ({ node, ...props }) => (
+                          <td style={selectedTheme.styles.td} {...props} />
+                        ),
                       }}
                     >
                       {markdownInput}
@@ -229,7 +261,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div> 
+          </div>
         </div>
       </div>
     </div>

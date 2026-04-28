@@ -12,6 +12,12 @@ export interface ThemeStyles {
   li: React.CSSProperties;
   link: React.CSSProperties;
   strong: React.CSSProperties;
+  table: React.CSSProperties;
+  thead: React.CSSProperties;
+  tbody: React.CSSProperties;
+  tr: React.CSSProperties;
+  th: React.CSSProperties;
+  td: React.CSSProperties;
 }
 
 export interface Theme {
@@ -23,7 +29,7 @@ export interface Theme {
 export const THEMES: Theme[] = [
   {
     id: 'default',
-    name: '默认清新',
+    name: '默认',
     styles: {
       container: {
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -98,6 +104,30 @@ export const THEMES: Theme[] = [
       strong: {
         fontWeight: 'bold',
         color: '#000',
+      },
+      table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        margin: '20px 0',
+        border: '1px solid #ddd',
+      },
+      thead: {
+        backgroundColor: '#f5f5f5',
+      },
+      tbody: {},
+      tr: {
+        borderBottom: '1px solid #ddd',
+      },
+      th: {
+        padding: '12px',
+        textAlign: 'left',
+        fontWeight: 'bold',
+        backgroundColor: '#f5f5f5',
+        border: '1px solid #ddd',
+      },
+      td: {
+        padding: '12px',
+        border: '1px solid #ddd',
       },
     },
   },
@@ -174,6 +204,31 @@ export const THEMES: Theme[] = [
         fontWeight: 'bold',
         color: '#07c160',
       },
+      table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        margin: '20px 0',
+        border: '1px solid #07c160',
+      },
+      thead: {
+        backgroundColor: '#07c160',
+      },
+      tbody: {},
+      tr: {
+        borderBottom: '1px solid #07c160',
+      },
+      th: {
+        padding: '12px',
+        textAlign: 'left',
+        fontWeight: 'bold',
+        backgroundColor: '#07c160',
+        color: '#ffffff',
+        border: '1px solid #07c160',
+      },
+      td: {
+        padding: '12px',
+        border: '1px solid #ddd',
+      },
     },
   },
   {
@@ -240,6 +295,136 @@ export const THEMES: Theme[] = [
         color: '#2c3e50',
         borderBottom: '2px solid #3498db',
       },
+      table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        margin: '20px 0',
+        border: '1px solid #2980b9',
+      },
+      thead: {
+        backgroundColor: '#2980b9',
+      },
+      tbody: {},
+      tr: {
+        borderBottom: '1px solid #ddd',
+      },
+      th: {
+        padding: '12px',
+        textAlign: 'left',
+        fontWeight: 'bold',
+        backgroundColor: '#2980b9',
+        color: '#ffffff',
+        border: '1px solid #2980b9',
+      },
+      td: {
+        padding: '12px',
+        border: '1px solid #ddd',
+      },
     },
   },
+  {
+    "id": "standard",
+    "name": "标准",
+    "styles": {
+      "container": {
+        "fontFamily": "Optima-Regular, Optima, PingFangSC-light, PingFangTC-light, \"PingFang SC\", Cambria, Cochin, Georgia, Times, \"Times New Roman\", serif",
+        "fontSize": "16px",
+        "lineHeight": "1.6",
+        "color": "#3e3e3e"
+      },
+      "h1": {
+        "fontSize": "2em",
+        "fontWeight": "bold",
+        "marginTop": "0.67em",
+        "marginBottom": "0.67em"
+      },
+      "h2": {
+        "borderLeft": "solid #F5222D 1.0pt",
+        "paddingLeft": "8.0pt",
+        "color": "rgb(248, 173, 25)",
+        "fontWeight": "bold",
+        "letterSpacing": "0.034em",
+        "fontSize": "1.5em",
+        "marginTop": "0.83em",
+        "marginBottom": "0.83em"
+      },
+      "h3": {
+        "fontSize": "1.17em",
+        "fontWeight": "bold",
+        "marginTop": "1em",
+        "marginBottom": "1em"
+      },
+      "p": {
+        "marginTop": "6pt",
+        "marginBottom": "6pt",
+        "lineHeight": "1.92",
+        "color": "#262626",
+        "fontSize": "12pt",
+        "fontFamily": "PingFang SC"
+      },
+      "blockquote": {
+        "margin": "1em 40px",
+        "padding": "0 15px",
+        "borderLeft": "4px solid #ccc",
+        "color": "#666"
+      },
+      "code": {
+        "fontFamily": "monospace",
+        "fontSize": "0.9em",
+        "backgroundColor": "rgba(27,31,35,.05)",
+        "padding": "0.2em 0.4em",
+        "borderRadius": "3px"
+      },
+      "pre": {
+        "fontFamily": "monospace",
+        "fontSize": "0.9em",
+        "backgroundColor": "#f6f8fa",
+        "padding": "16px",
+        "overflow": "auto",
+        "lineHeight": "1.45",
+        "borderRadius": "6px"
+      },
+      "ul": {
+        "listStyleType": "disc",
+        "marginLeft": "1.5em"
+      },
+      "ol": {
+        "listStyleType": "decimal",
+        "marginLeft": "1.5em"
+      },
+      "li": {
+        "marginBottom": "0.5em"
+      },
+      "link": {
+        "color": "#0366d6",
+        "textDecoration": "none"
+      },
+      "strong": {
+        "fontWeight": "bold"
+      },
+      "table": {
+        "width": "100%",
+        "borderCollapse": "collapse",
+        "marginTop": "1em",
+        "marginBottom": "1em"
+      },
+      "thead": {
+        "backgroundColor": "#f6f8fa"
+      },
+      "tbody": {},
+      "tr": {
+        "borderTop": "1px solid #dfe2e5"
+      },
+      "th": {
+        "padding": "6px 13px",
+        "border": "1px solid #dfe2e5",
+        "fontWeight": "bold",
+        "textAlign": "left"
+      },
+      "td": {
+        "padding": "6px 13px",
+        "border": "1px solid #dfe2e5"
+      }
+    }
+  }
 ];

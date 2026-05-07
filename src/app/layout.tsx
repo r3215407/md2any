@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MarkDown to WeChat",
-  description: "",
+  description: 'Convert Markdown into styled WeChat public account content with live preview and copy functionality.'
 };
 
 export default function RootLayout({

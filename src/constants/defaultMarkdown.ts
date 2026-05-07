@@ -68,7 +68,7 @@ function hello() {
 资深大厂后端工程师，专注于AI工作流和系统架构设计，可以关注我，大家讨论关于工具的问题。
 
 🌐 公众号： 一只黄鹂
-
+![示例图片](https://boityhqwge9hsnb4.public.blob.vercel-storage.com/qrcode_for_gh.jpg)
 
 ## 感谢使用
 - 感谢你使用本 Markdown 转换工具 🙌

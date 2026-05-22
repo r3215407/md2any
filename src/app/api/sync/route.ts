@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   if (!data || data.length === 0) {
     return NextResponse.json(
       { code: 1, message: 'No message found' },
-      { status: 404 }
+      { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } }
     );
   }
 
@@ -41,13 +41,63 @@ export async function GET(request: Request) {
 
       const htmlContent = await response.text();
       const $ = cheerio.load(htmlContent);
-      let title = $('h1').text().trim();
-      const content = $('#js_content').html();
+      let title = $('h1').text().trim().replace(/[\\/:]/g, '');
+
+      let content = null;
       const turndownService = new TurndownService();
+
+      if (item.includes('weixin')) {
+        content = $('#js_content').html();
+        turndownService.addRule('multiCodeBlock', {
+          filter(node) {
+            return node.nodeName === 'PRE';
+          },
+
+          replacement(content, node) {
+            const pre = node as HTMLElement;
+
+            const codes = Array.from(pre.querySelectorAll('code'));
+
+            const merged = codes
+              .map(code => code.textContent?.trim() || '')
+              .join('\n');
+
+            const lang = pre.getAttribute('data-lang') || '';
+
+            return `\n\`\`\`\n${merged}\n\`\`\`\n`;
+          }
+        });
+        turndownService.addRule('markdownImage', {
+          filter(node) {
+            return node.nodeName === 'IMG';
+          },
+
+          replacement(content, node) {
+            const img = node as HTMLImageElement;
+            console.log(img)
+            const alt = img.getAttribute('alt') || '';
+            let src = img.getAttribute('data-src') || '';
+            if (!src) {
+              src = img.getAttribute('src') || '';
+            }
+            const title = img.getAttribute('title');
+
+            // markdown title 可选
+            const titlePart = title ? ` "${title}"` : '';
+
+            return `![${alt}](${src}${titlePart})`;
+          }
+        });
+
+
+      } else {
+        content = $('body').html();
+      }
+
       const markdown = turndownService.turndown(content || '').replace(/(\n\n)(\s*\n\n)+/g, '\n\n');
       result.push({ title, markdown, 'type': 'md' });
     } else {
-      result.push({ 'title': 'text', 'type': 'text', 'markdown': item });
+      result.push({ 'title': '消息', 'type': 'text', 'markdown': item });
     }
 
     await supabase.from('wechat_messages').update({ status: 1 }).eq('id', data[index].id);

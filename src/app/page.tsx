@@ -7,7 +7,7 @@ import { THEMES, Theme } from '../styles/themes';
 import { DEFAULT_MARKDOWN } from '../constants/defaultMarkdown';
 
 export default function Home() {
-  const [markdownInput, setMarkdownInput] = useState<string>('');
+  const [markdownInput, setMarkdownInput] = useState<string>(DEFAULT_MARKDOWN);
   const [previewMode, setPreviewMode] = useState<'laptop' | 'phone'>('phone');
   const [selectedTheme, setSelectedTheme] = useState<Theme>(THEMES[0]);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -20,8 +20,6 @@ export default function Home() {
       const storedMarkdown = localStorage.getItem('markdownInput');
       if (storedMarkdown) {
         setMarkdownInput(storedMarkdown); // eslint-disable-line react-hooks/set-state-in-effect
-      } else {
-        setMarkdownInput(DEFAULT_MARKDOWN); // eslint-disable-line react-hooks/set-state-in-effect
       }
     }
   }, []);

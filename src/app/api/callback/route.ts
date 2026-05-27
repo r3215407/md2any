@@ -33,13 +33,6 @@ export async function POST(request: Request) {
   const timestamp = searchParams.get('timestamp');
   const nonce = searchParams.get('nonce');
 
-  // // Verify signature if signature parameters are provided (standard WeChat behavior)
-  // if (signature && timestamp && nonce) {
-  //   if (!checkSignature(signature, timestamp, nonce)) {
-  //     return new NextResponse('Invalid signature', { status: 403 });
-  //   }
-  // }
-
   const xmlText = await request.text();
   if (!xmlText) {
     return NextResponse.json(
@@ -73,23 +66,51 @@ export async function POST(request: Request) {
   };
 
   // Save to Supabase database
-  try {
-    const { error } = await supabase.from('wechat_messages').insert({
-      to_user_name: toUserName,
-      from_user_name: fromUserName,
-      create_time: createTime ? parseInt(createTime, 10) : null,
-      msg_type: msgType,
-      content: content || null,
-      msg_id: msgId || null,
-      msg_data_id: msgDataId || null,
-      idx: idx || null,
-    });
-    if (error) {
-      console.error('Error inserting message into Supabase:', error);
+  if (msgType !== 'event') {
+    try {
+      const { error } = await supabase.from('wechat_messages').insert({
+        to_user_name: toUserName,
+        from_user_name: fromUserName,
+        create_time: createTime ? parseInt(createTime, 10) : null,
+        msg_type: msgType,
+        content: content || null,
+        msg_id: msgId || null,
+        msg_data_id: msgDataId || null,
+        idx: idx || null,
+      });
+      if (error) {
+        console.error('Error inserting message into Supabase:', error);
+      }
+    } catch (err) {
+      console.error('Unexpected error inserting into Supabase:', err);
     }
-  } catch (err) {
-    console.error('Unexpected error inserting into Supabase:', err);
   }
+
+  if (content === '注册') {
+    const xmlResponse = `<xml>
+<ToUserName><![CDATA[${fromUserName}]]></ToUserName>
+<FromUserName><![CDATA[${toUserName}]]></FromUserName>
+<CreateTime>${Math.floor(Date.now() / 1000)}</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[🎉 注册成功！您的专属 API_KEY 已生成：
+
+🔑 API_KEY：
+${fromUserName}
+
+📌 使用指南：
+1️⃣ 请妥善保管您的 API_KEY，切勿泄露给他人。
+2️⃣ 插件包下载：https://wwblh.lanzoum.com/izXN83qvkt8d
+3️⃣ 详细安装文档：https://docs.qq.com/doc/DS1pnc2ZDYUdheWZK
+
+将 API_KEY 复制并配置到插件中即可开启您的排版之旅。祝您使用愉快！✨]]></Content>
+</xml>`;
+    return new NextResponse(xmlResponse, {
+      headers: {
+        'Content-Type': 'application/xml',
+      },
+    });
+  }
+
 
   // Determine return format (JSON if format=json query parameter or Accept: application/json header is used)
   const acceptHeader = request.headers.get('accept') || '';

@@ -116,15 +116,19 @@ function blocksToMarkdown(blocks: DraftBlock[], mediaEntities: MediaEntity[] = [
         lines.push('', `###### ${styled}`, '');
         break;
       case 'blockquote':
-        lines.push(`> ${styled}`);
+        lines.push(`> ${styled}` + '\n');
         break;
-      case 'unordered-list-item':
-        lines.push(`- ${styled}`);
+      case 'unordered-list-item': {
+        const isLastUl = i + 1 >= blocks.length || blocks[i + 1].type !== 'unordered-list-item';
+        lines.push(`- ${styled}` + (isLastUl ? '\n' : ''));
         break;
-      case 'ordered-list-item':
+      }
+      case 'ordered-list-item': {
         olCounter++;
-        lines.push(`${olCounter}. ${styled}`);
+        const isLastOl = i + 1 >= blocks.length || blocks[i + 1].type !== 'ordered-list-item';
+        lines.push(`${olCounter}. ${styled}` + (isLastOl ? '\n' : ''));
         break;
+      }
       case 'code-block':
         // Accumulate consecutive code blocks into a fenced block
         if (prevType !== 'code-block') lines.push('```');
@@ -135,7 +139,7 @@ function blocksToMarkdown(blocks: DraftBlock[], mediaEntities: MediaEntity[] = [
         // Use the next media entity's URL, fall back to block.text
         const entity = mediaQueue.shift();
         const imgUrl = entity!.media_info.original_img_url;
-        if (imgUrl) lines.push(`![](${imgUrl})`);
+        if (imgUrl) lines.push(`![](${imgUrl})` + '\n');
         break;
       }
       case 'unstyled':

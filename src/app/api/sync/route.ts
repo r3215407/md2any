@@ -116,15 +116,19 @@ function blocksToMarkdown(blocks: DraftBlock[], mediaEntities: MediaEntity[] = [
         lines.push('', `###### ${styled}`, '');
         break;
       case 'blockquote':
-        lines.push(`> ${styled}`);
+        lines.push(`> ${styled}` + '\n');
         break;
-      case 'unordered-list-item':
-        lines.push(`- ${styled}`);
+      case 'unordered-list-item': {
+        const isLastUl = i + 1 >= blocks.length || blocks[i + 1].type !== 'unordered-list-item';
+        lines.push(`- ${styled}` + (isLastUl ? '\n' : ''));
         break;
-      case 'ordered-list-item':
+      }
+      case 'ordered-list-item': {
         olCounter++;
-        lines.push(`${olCounter}. ${styled}`);
+        const isLastOl = i + 1 >= blocks.length || blocks[i + 1].type !== 'ordered-list-item';
+        lines.push(`${olCounter}. ${styled}` + (isLastOl ? '\n' : ''));
         break;
+      }
       case 'code-block':
         // Accumulate consecutive code blocks into a fenced block
         if (prevType !== 'code-block') lines.push('```');
@@ -134,8 +138,10 @@ function blocksToMarkdown(blocks: DraftBlock[], mediaEntities: MediaEntity[] = [
       case 'atomic': {
         // Use the next media entity's URL, fall back to block.text
         const entity = mediaQueue.shift();
-        const imgUrl = entity!.media_info.original_img_url;
-        if (imgUrl) lines.push(`![](${imgUrl})`);
+        if (entity != undefined) {
+          const imgUrl = entity!.media_info!.original_img_url;
+          if (imgUrl) lines.push(`![](${imgUrl})` + '\n');
+        }
         break;
       }
       case 'unstyled':
@@ -168,7 +174,38 @@ async function defuddleArticle(url: string) {
   };
 
   if (url.includes('weixin')) {
-    options.contentSelector = '#js_content';
+    if (document.querySelector('#js_content')) {
+      options.contentSelector = '#js_content';
+    } else {
+      const cdnRegex = /cdn_url:\s*'([^']+)'/g;
+      const imageUrls = Array.from(new Set(Array.from(html.matchAll(cdnRegex)).map(m => m[1]))).filter(url => url.includes('from=appmsg'));
+      const images = imageUrls.map(url => `![](${url})`).join('\n');
+      const desc = Array.from(document.querySelectorAll('meta[name="description"]')).map(item => item.getAttribute('content') || '').join('\n');
+      const authorMatch = html.match(/nick_name: '([^']+)'/);
+      const author = authorMatch ? authorMatch[1].trim() : '';
+
+      return {
+        title: document.querySelector('meta[property="og:title"]')?.getAttribute('content') || '',
+        markdown: images + '\n' + (desc.replaceAll('\\x0a', '\n') || ''),
+        author,
+        tags: ''
+      };
+    }
+  }
+
+  if (url.includes('xhslink')) {
+    const images = Array.from(document.querySelectorAll('meta[name="og:image"]')).map(item => `![](${item.getAttribute('content')})`).join('\n');
+    const desc = Array.from(document.querySelectorAll('body span')).map(item => item.textContent || '').join('\n');
+    const final_desc = desc.split('\n关注\n关注\n').pop();
+    // assable  split result but ignore the last one
+    const tags = final_desc?.split('#').slice(0, -1).join(' #');
+
+    return {
+      title: document.querySelector('meta[name="og:title"]')?.getAttribute('content')?.replace(' - 小红书', '') || '',
+      markdown: images + (tags ? '\n\n' + tags : ''),
+      author: document.querySelector('span[class="username"]')?.textContent || '',
+      tags: tags
+    };
   }
 
   const result = await Defuddle(document, url, options);
@@ -194,12 +231,14 @@ async function fetchXArticle(url: string, author: string): Promise<{ title: stri
   const data = await response.json();
   const rawBlocks: DraftBlock[] = data.tweet.article.content.blocks || [];
   const coverUrl: string | undefined = data.tweet.article.cover_media?.media_info?.original_img_url;
+  const description = data.tweet.article.preview_text;
   const title = data.tweet.article.title || '';
   const frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
 source: "${url}"
 author: "${author.replace(/"/g, '\\"')}"
 created: ${new Date().toISOString().split('T')[0]}
+description: "${description.replace(/"/g, '\\"').replace(/\n/g, '')}"
 tags:
   - "clippings"
 ---
@@ -234,16 +273,26 @@ export async function GET(request: Request) {
 
   for (let index = 0; index < data.length; index++) {
     const item = data[index].content;
-    if (typeof item === 'string' && item.startsWith('https')) {
-      try {
-        const article = await defuddleArticle(item);
-        const title = (article.title || '').trim().replace(/[\\/:]/g, '') || 'Untitled';
-        const author = (article.author || '').trim();
+    const msgType = data[index].msg_type;
+    if (msgType === 'image') {
+      const title = '图片-' + new Date().toISOString().split('T')[0]
+      result.push({ 'title': title, 'type': 'text', 'markdown': item });
+
+    } else {
+      if (item.startsWith('http') || item.includes('http://xhslink.com')) {
+        let url = item
+        if (item.includes('http://xhslink.com')) {
+          url = item.match(/http:\/\/xhslink\.com\/\S+/g)?.[0];
+        }
+        try {
+          const article = await defuddleArticle(url);
+          const title = (article.title || '').trim().replace(/[\\/:]/g, '') || 'Untitled';
+          const author = (article.author || '').trim();
 
 
-        const frontmatter = `---
+          const frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
-source: "${item}"
+source: "${url}"
 author: "${author.replace(/"/g, '\\"')}"
 created: ${new Date().toISOString().split('T')[0]}
 tags:
@@ -251,21 +300,25 @@ tags:
 ---
 `;
 
-        const markdown = (article.markdown || '').replace(/(\n\n)(\s*\n\n)+/g, '\n\n');
-        if (markdown.includes("https://x.com/i/article")) {
-          const xArticle = await fetchXArticle(item, author);
-          result.push({ title: xArticle.title, markdown: xArticle.markdown, type: 'md' });
-        } else {
-          result.push({ title, markdown: frontmatter + markdown, 'type': 'md' });
+          const markdown = (article.markdown || '').replace(/(\n\n)(\s*\n\n)+/g, '\n\n');
+          if (markdown.includes("https://x.com/i/article")) {
+            const xArticle = await fetchXArticle(item, author);
+            result.push({ title: xArticle.title, markdown: xArticle.markdown, type: 'md' });
+          } else {
+            result.push({ title, markdown: frontmatter + markdown, 'type': 'md' });
+          }
+
+        } catch (e) {
+          console.error(`Error parsing article at ${item}:`, e);
+          result.push({ title: 'Error parsing article', markdown: `Failed to fetch or parse article: ${item}`, 'type': 'text' });
         }
-
-
-      } catch (e) {
-        console.error(`Error parsing article at ${item}:`, e);
-        result.push({ title: 'Error parsing article', markdown: `Failed to fetch or parse article: ${item}`, 'type': 'text' });
+      } else {
+        const splitText = item.split('\n');
+        const title = (splitText[0] || '').trim().replace(/[\\/:*?"<>|]/g, '') || 'Untitled';
+        result.push({ 'title': title, 'type': 'text', 'markdown': item });
       }
-    } else {
-      result.push({ 'title': item, 'type': 'text', 'markdown': item });
+
+
     }
 
     await supabase.from('wechat_messages').update({ status: 1 }).eq('id', data[index].id);

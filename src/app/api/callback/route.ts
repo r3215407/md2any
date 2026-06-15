@@ -48,8 +48,9 @@ export async function POST(request: Request) {
   const toUserName = $('ToUserName').text() || $('xml > ToUserName').text();
   const fromUserName = $('FromUserName').text() || $('xml > FromUserName').text();
   const createTime = $('CreateTime').text() || $('xml > CreateTime').text();
-  const msgType = $('MsgType').text() || $('xml > MsgType').text();
-  const content = $('Content').text() || $('xml > Content').text();
+  let msgType = $('MsgType').text() || $('xml > MsgType').text();
+  const event = $('Event').text() || $('xml > Event').text();
+  let content = $('Content').text() || $('xml > Content').text();
   const msgId = $('MsgId').text() || $('xml > MsgId').text();
   const msgDataId = $('MsgDataId').text() || $('xml > MsgDataId').text();
   const idx = $('Idx').text() || $('xml > Idx').text();
@@ -67,6 +68,10 @@ export async function POST(request: Request) {
 
   // Save to Supabase database
   if (msgType !== 'event') {
+    if (msgType === 'image') {
+      const picUrl = $('PicUrl').text() || $('xml > PicUrl').text();
+      content = `![](${picUrl})`;
+    }
     try {
       const { error } = await supabase.from('wechat_messages').insert({
         to_user_name: toUserName,
@@ -86,7 +91,22 @@ export async function POST(request: Request) {
     }
   }
 
-  if (content === '注册') {
+  if (event === 'subscribe') {
+    const xmlResponse = `<xml>
+<ToUserName><![CDATA[${fromUserName}]]></ToUserName>
+<FromUserName><![CDATA[${toUserName}]]></FromUserName>
+<CreateTime>${Math.floor(Date.now() / 1000)}</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[🎉 感谢你的关注，回复 "插件" 获取插件包及安装文档链接。]]></Content>
+</xml>`;
+    return new NextResponse(xmlResponse, {
+      headers: {
+        'Content-Type': 'application/xml',
+      },
+    });
+  }
+
+  if (content === '注册' || content === '插件') {
     const xmlResponse = `<xml>
 <ToUserName><![CDATA[${fromUserName}]]></ToUserName>
 <FromUserName><![CDATA[${toUserName}]]></FromUserName>
@@ -99,7 +119,7 @@ ${fromUserName}
 
 📌 使用指南：
 1️⃣ 请妥善保管您的 API_KEY，切勿泄露给他人。
-2️⃣ 插件包下载：https://wwblh.lanzoum.com/izXN83qvkt8d
+2️⃣ 插件包下载：https://wwblh.lanzoum.com/irN2x3skjrjc
 3️⃣ 详细安装文档：https://docs.qq.com/doc/DS1pnc2ZDYUdheWZK
 
 将 API_KEY 复制并配置到插件中即可开启您的排版之旅。祝您使用愉快！✨]]></Content>

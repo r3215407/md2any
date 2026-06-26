@@ -177,6 +177,36 @@ async function defuddleArticle(url: string) {
     if (document.querySelector('#js_content')) {
       options.contentSelector = '#js_content';
     } else {
+      if (url.startsWith('https://weixin.qq.com/sph/')) {
+        const shortUri = url.split('/').pop()
+        const response = await fetch('https://channels.weixin.qq.com/finder-preview/api/feed/get_feed_info?&_pageUrl=https:%2F%2Fchannels.weixin.qq.com%2Ffinder-preview%2Fpages%2Fsph', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Origin': 'https://channels.weixin.qq.com',
+            'Referer': `https://channels.weixin.qq.com/finder-preview/pages/sph?id=${shortUri}`,
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36'
+          },
+          body: JSON.stringify({
+            baseReq: {
+              generalToken: ''
+            },
+            shortUri
+          })
+        });
+        const result = await response.json();
+        const author = result.data.authorInfo.nickname;
+        const title = result.data.feedInfo.description;
+        // const content = data.feedInfo.description;
+        const images = result.data.feedInfo.coverUrl;
+
+        return {
+          title,
+          markdown: `![](${images})` + '\n',
+          author,
+          tags: 'video'
+        };
+      }
       const cdnRegex = /cdn_url:\s*'([^']+)'/g;
       const imageUrls = Array.from(new Set(Array.from(html.matchAll(cdnRegex)).map(m => m[1]))).filter(url => url.includes('from=appmsg'));
       const images = imageUrls.map(url => `![](${url})`).join('\n');
@@ -255,7 +285,6 @@ export async function GET(request: Request) {
   const { data, error } = await supabase.from('wechat_messages')
     .select('*').eq('from_user_name', code).eq('status', 0).order('create_time', { ascending: false });
   if (error) {
-    console.error('Error fetching from Supabase:', error);
     return NextResponse.json(
       { code: 1, message: 'Error fetching from Supabase' },
       { status: 500 }
@@ -309,7 +338,6 @@ tags:
           }
 
         } catch (e) {
-          console.error(`Error parsing article at ${item}:`, e);
           result.push({ title: 'Error parsing article', markdown: `Failed to fetch or parse article: ${item}`, 'type': 'text' });
         }
       } else {

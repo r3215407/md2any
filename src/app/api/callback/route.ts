@@ -119,7 +119,7 @@ ${fromUserName}
 
 📌 使用指南：
 1️⃣ 请妥善保管您的 API_KEY，切勿泄露给他人。
-2️⃣ 插件包下载：https://wwblh.lanzoum.com/irN2x3skjrjc
+2️⃣ 插件包下载：https://wwblh.lanzoum.com/if8qz3t136ib
 3️⃣ 详细安装文档：https://docs.qq.com/doc/DS1pnc2ZDYUdheWZK
 
 将 API_KEY 复制并配置到插件中即可开启您的排版之旅。祝您使用愉快！✨]]></Content>

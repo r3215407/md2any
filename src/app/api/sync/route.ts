@@ -201,7 +201,7 @@ async function defuddleArticle(url: string) {
         const images = result.data.feedInfo.coverUrl;
 
         return {
-          title,
+          title: title.replaceAll('\n', ' '),
           markdown: `![](${images})` + '\n',
           author,
           tags: 'video'

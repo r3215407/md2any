@@ -224,14 +224,15 @@ async function defuddleArticle(url: string) {
   }
 
   if (url.includes('xhslink')) {
-    const images = Array.from(document.querySelectorAll('meta[name="og:image"]')).map(item => `![](${item.getAttribute('content')})`).join('\n');
+    console.log(html)
+    const images = Array.from(document.querySelectorAll('meta[property="og:image"]')).map(item => `![](${item.getAttribute('content')})`).join('\n');
     const desc = Array.from(document.querySelectorAll('body span')).map(item => item.textContent || '').join('\n');
     const final_desc = desc.split('\n关注\n关注\n').pop();
     // assable  split result but ignore the last one
     const tags = final_desc?.split('#').slice(0, -1).join(' #');
 
     return {
-      title: document.querySelector('meta[name="og:title"]')?.getAttribute('content')?.replace(' - 小红书', '') || '',
+      title: document.querySelector('meta[property="og:title"]')?.getAttribute('content')?.replace(' - 小红书', '') || '',
       markdown: images + (tags ? '\n\n' + tags : ''),
       author: document.querySelector('span[class="username"]')?.textContent || '',
       tags: tags
